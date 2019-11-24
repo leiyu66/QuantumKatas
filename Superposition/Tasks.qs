@@ -8,7 +8,7 @@ namespace Quantum.Kata.Superposition {
     open Microsoft.Quantum.Canon;
     open Microsoft.Quantum.Convert;
     open Microsoft.Quantum.Math;
-
+    open Microsoft.Quantum.Arrays;
 
     //////////////////////////////////////////////////////////////////
     // Welcome!
@@ -36,7 +36,7 @@ namespace Quantum.Kata.Superposition {
         // Type the following: H(q);
         // Then rebuild the project and rerun the tests - T01_PlusState_Test should now pass!
 
-        // ...
+        H(q);
     }
 
 
@@ -46,7 +46,8 @@ namespace Quantum.Kata.Superposition {
     operation MinusState (q : Qubit) : Unit {
         // In this task, as well as in all subsequent ones, you have to come up with the solution yourself.
 
-        // ...
+        H(q);
+        Z(q);
     }
 
 
@@ -59,7 +60,7 @@ namespace Quantum.Kata.Superposition {
         // Hint: Experiment with rotation gates from the Microsoft.Quantum.Intrinsic namespace.
         // Note that all rotation operators rotate the state by _half_ of its angle argument.
 
-        // ...
+        Ry(2.0*alpha,q);
     }
 
 
@@ -71,7 +72,8 @@ namespace Quantum.Kata.Superposition {
         // You don't need to modify them. Feel free to remove them, this won't cause your code to fail.
         EqualityFactI(Length(qs), 2, "The array should have exactly 2 qubits.");
 
-        // ...
+        H(qs[0]);
+        H(qs[1]);
     }
 
 
@@ -84,7 +86,10 @@ namespace Quantum.Kata.Superposition {
         EqualityFactI(Length(qs), 2, "The array should have exactly 2 qubits.");
 
         // Hint: Is this state separable?
-        // ...
+        H(qs[0]);
+        H(qs[1]);
+        S(qs[1]);
+        Z(qs[0]);
     }
 
 
@@ -92,7 +97,8 @@ namespace Quantum.Kata.Superposition {
     // Input: two qubits in |00⟩ state (stored in an array of length 2).
     // Goal: create a Bell state |Φ⁺⟩ = (|00⟩ + |11⟩) / sqrt(2) on these qubits.
     operation BellState (qs : Qubit[]) : Unit {
-        // ...
+        H(qs[0]);
+        CNOT(qs[0],qs[1]);
     }
 
 
@@ -106,7 +112,15 @@ namespace Quantum.Kata.Superposition {
     //       2: |Ψ⁺⟩ = (|01⟩ + |10⟩) / sqrt(2)
     //       3: |Ψ⁻⟩ = (|01⟩ - |10⟩) / sqrt(2)
     operation AllBellStates (qs : Qubit[], index : Int) : Unit {
-        // ...
+        H(qs[0]);
+        CNOT(qs[0],qs[1]);
+        if(index == 1 or index == 3)
+        {
+            Z(qs[1]);
+        }
+        if(index == 2 or index == 3){
+            X(qs[1]);
+        }
     }
 
 
@@ -116,7 +130,10 @@ namespace Quantum.Kata.Superposition {
     operation GHZ_State (qs : Qubit[]) : Unit {
         // Hint: N can be found as Length(qs).
 
-        // ...
+        H(qs[0]);
+        for(i in 1..Length(qs)-1) {
+            CNOT(qs[0],qs[i]);
+        }
     }
 
 
@@ -125,7 +142,9 @@ namespace Quantum.Kata.Superposition {
     // Goal: create an equal superposition of all basis vectors from |0...0⟩ to |1...1⟩
     // (i.e. state (|0...0⟩ + ... + |1...1⟩) / sqrt(2^N) ).
     operation AllBasisVectorsSuperposition (qs : Qubit[]) : Unit {
-        // ...
+        for(i in 0..Length(qs)-1) {
+            H(qs[i]);
+        }
     }
 
 
@@ -142,7 +161,13 @@ namespace Quantum.Kata.Superposition {
     // Example: for N = 2 and isEven = true the required state is (|00⟩ + |10⟩) / sqrt(2), 
     //      and for N = 2 and isEven = false - (|01⟩ + |11⟩) / sqrt(2).
     operation EvenOddNumbersSuperposition (qs : Qubit[], isEven : Bool) : Unit {
-        // ...
+        let N = Length(qs);
+        for(i in 0..N-2) {
+            H(qs[i]);
+        }
+        if(not isEven) {
+            X(qs[N-1]);
+        }
     }
 
 
@@ -150,7 +175,9 @@ namespace Quantum.Kata.Superposition {
     // Input: 2 qubits in |00⟩ state.
     // Goal: create the state (|00⟩ + |01⟩ + |10⟩) / sqrt(3) on these qubits.
     operation ThreeStates_TwoQubits (qs : Qubit[]) : Unit {
-        // ...
+        let theta = ArcCos(Sqrt(2.0/3.0));
+        Ry(theta*2.0,qs[0]);
+        (ControlledOnInt(0,H))([qs[0]],qs[1]);
     }
 
 
@@ -158,7 +185,12 @@ namespace Quantum.Kata.Superposition {
     // Input: 2 qubits in |00⟩ state
     // Goal: create the state (3|00⟩ + |01⟩ + |10⟩ + |11⟩) / sqrt(12) on these qubits.
     operation Hardy_State (qs : Qubit[]) : Unit {
-        // ...
+        let theta1 = ArcSin(Sqrt(1.0/6.0));
+        Ry(2.0*theta1, qs[0]);
+
+        let theta2 = ArcSin(Sqrt(1.0/10.0));
+        (ControlledOnInt(0,Ry(2.0*theta2,_)))([qs[0]],qs[1]);
+        (ControlledOnInt(1,H))([qs[0]],qs[1]);
     }
 
 
@@ -177,7 +209,12 @@ namespace Quantum.Kata.Superposition {
         EqualityFactI(Length(bits), Length(qs), "Arrays should have the same length");
         EqualityFactB(bits[0], true, "First bit of the input bit string should be set to true");
 
-        // ...
+        H(qs[0]);
+        for(i in 1..Length(qs)-1) {
+            if(bits[i]) {
+                CNOT(qs[0],qs[i]);
+            }
+        }
     }
 
 
@@ -193,7 +230,28 @@ namespace Quantum.Kata.Superposition {
     // You are guaranteed that the both bit strings have the same length as the qubit array,
     // and that the bit strings will differ in at least one bit.
     operation TwoBitstringSuperposition (qs : Qubit[], bits1 : Bool[], bits2 : Bool[]) : Unit {
-        // ...
+        mutable index = 0;
+        repeat {
+            if(bits1[index] and bits2[index]) {
+                X(qs[index]);
+            }
+        } until(bits1[index] != bits2[index])
+        fixup {
+            set index = index + 1;
+        }
+        let firstDiff = index;
+        H(qs[firstDiff]);
+        for(i in firstDiff+1..Length(qs)-1) {
+            if(bits1[i] and bits2[i]) {
+                X(qs[i]);
+            } elif(bits1[i] != bits2[i]) {
+                if(bits1[firstDiff] != bits1[i])
+                {
+                    X(qs[i]);
+                }
+                CNOT(qs[firstDiff],qs[i]);
+            }
+        }
     }
 
 
@@ -212,7 +270,25 @@ namespace Quantum.Kata.Superposition {
     operation FourBitstringSuperposition (qs : Qubit[], bits : Bool[][]) : Unit {
         // Hint: remember that you can allocate extra qubits.
 
-        // ...
+        using(anc = Qubit[2]) {
+            ApplyToEachA(H,anc);
+            for(i in 0..Length(qs)-1) {
+                for(k in 0..3) {
+                    if(bits[k][i]) {
+                        (ControlledOnInt(k,X))(anc,qs[i]);
+                    }
+                }
+            }
+
+            for(k in 0..3) {
+                if(k%2 == 1) {
+                    (ControlledOnBitString(bits[k],X))(qs,anc[0]);
+                }
+                if(k/2 == 1) {
+                    (ControlledOnBitString(bits[k],X))(qs,anc[1]);
+                }
+            }
+        }
     }
 
 
@@ -224,7 +300,27 @@ namespace Quantum.Kata.Superposition {
     operation WState_PowerOfTwo (qs : Qubit[]) : Unit {
         // Hint: you can use Controlled modifier to perform arbitrary controlled gates.
 
-        // ...
+        let N = Length(qs);
+        if(N>1) {
+            let K = Round(Lg(IntAsDouble(N)));
+            using(anc = Qubit[K]) {
+                ApplyToEachA(H, anc);
+                for(i in 0..N-1) {
+                    (ControlledOnInt(i,X))(anc,qs[i]);
+                }
+                for(i in 0..N-1) {
+                    let bits = IntAsBoolArray(i,K);
+                    for(k in 0..Length(bits)-1) {
+                        if(bits[k]) {
+                            (ControlledOnBitString(ConstantArray(i,false) + [true] + ConstantArray(N-i-1,false),X))(qs,anc[k]);
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            X(qs[0]);
+        }
     }
 
 
@@ -234,6 +330,10 @@ namespace Quantum.Kata.Superposition {
     // W state is an equal superposition of all basis states on N qubits of Hamming weight 1.
     // Example: for N = 3, W state is (|100⟩ + |010⟩ + |001⟩) / sqrt(3).
     operation WState_Arbitrary (qs : Qubit[]) : Unit {
-        // ...
+        let N = Length(qs);
+        for(i in 0..N-1) {
+            let theta = ArcSin(Sqrt(1.0/IntAsDouble(N-i)));
+            (ControlledOnBitString(ConstantArray(i,false),Ry(2.0*theta,_)))(qs[0..i-1],qs[i]);
+        }
     }
 }

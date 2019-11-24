@@ -286,3 +286,6 @@ TSWLatexianTemp*
 
 # Python build files
 __pycache__
+
+# Local vscode configuration
+.vscode/
